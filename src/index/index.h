@@ -26,11 +26,6 @@ struct Index{
     ~Index()                      = default;
     Index()                       = default;
 
-//    Index(Index&)               = default;
-//    Index(Index&&)              = default;
-//    Index& operator=(Index&)    = default;
-//    Index& operator=(Index&&)   = default;
-
     Index(value_type x, value_type y) : row_{x}, column_{y} {}
 
 };
@@ -63,11 +58,6 @@ struct BondIndex{
 
     ~BondIndex()                        = default;
     BondIndex()                         = default;
-//    BondIndex(BondIndex&)               = default;
-//    BondIndex(BondIndex&&)              = default;
-//    BondIndex& operator=(BondIndex&)    = default;
-//    BondIndex& operator=(BondIndex&&)   = default;
-
 
     BondIndex(BondType hv, value_type row, value_type column)
             :  row_{row}, column_{column}

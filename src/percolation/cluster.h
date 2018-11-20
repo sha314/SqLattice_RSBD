@@ -23,9 +23,8 @@ class Cluster{
     std::vector<BondIndex>  _bond_index; // BondIndex for indexing bonds
     std::vector<Index>      _site_index; // Site index
 
-
-    int _creation_time;  // holds the creation birthTime of a cluster object
-    int _id;
+    int _creation_time{-1};  // holds the creation birthTime of a cluster object
+    int _id{-1};
 public:
 //    using iterator = std::vector<Bond>::iterator;
 
@@ -56,18 +55,6 @@ public:
 
     Index lastAddedSite(){return _site_index.back();}
     BondIndex lastAddedBond(){return _bond_index.back();}
-
-    bool isPresent(BondIndex bond) const ;
-    bool isPresent(Index site) const ;
-
-    bool checkPresenceAndErase(BondIndex bond);
-    bool checkPresenceAndErase(Index bond);
-
-    bool checkPresenceAndEraseIf(BondIndex bond, bool flag);
-    bool checkPresenceAndEraseIf(Index bond, bool flag);
-
-    void eraseSite(value_type index);
-    void eraseBond(value_type index);
 
 
     void insert(const std::vector<BondIndex>& bonds);

@@ -10,11 +10,8 @@ SET( CMAKE_CXX_FLAGS  "-pthread -fopenmp")
 #SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
 
 set(SOURCE_FILES
-        src/types.h
         src/main.cpp
-        src/ensemble/site_percolation.cpp
-        src/ensemble/site_percolation.h
-        src/exception/exceptions.cpp
+        src/types.h
         src/exception/exceptions.h
         src/index/index.cpp
         src/index/index.h

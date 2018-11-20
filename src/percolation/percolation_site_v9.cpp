@@ -11,7 +11,6 @@
 #include "percolation.h"
 
 #include "../util/printer.h"
-#include "../index/delta.h"
 #include <omp.h>
 #include <thread>
 #include <algorithm>
