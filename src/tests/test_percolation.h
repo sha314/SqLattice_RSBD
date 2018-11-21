@@ -13,9 +13,12 @@
 #include "../util/time_tracking.h"
 
 
-void simulate_site_percolation(int argc, char **argv);
-
-
+/**
+ *
+ * @tparam PType : Template type of percolation class
+ * @param argc   : argc from commandline
+ * @param argv   : argv from commandline
+ */
 template<class PType>
 void simulate_site_percolation_T(int argc, char **argv) {
     value_type length = atoi(argv[1]);
@@ -87,7 +90,7 @@ void simulate_site_percolation_T(int argc, char **argv) {
                 entropy[counter] += lattice_percolation.entropy();
                 nob_wraping[counter] += lattice_percolation.numberOfBondsInTheWrappingClusters();
                 nob_largest[counter] += lattice_percolation.numberOfBondsInTheLargestCluster_v2();
-                lattice_percolation.jump();
+
                 if(!wrapping_written && lattice_percolation.detectWrapping()){
                     fout_critical << lattice_percolation.occupationProbability() << ","
                                   << lattice_percolation.numberOfSitesInTheWrappingClusters() << ","

@@ -36,10 +36,6 @@ protected:
     SqLattice _lattice;
 
     value_type _index_sequence_position{};
-    // cluster
-    // todo. on the next version only count number of sites
-    // todo. and bonds and keep track of root sites and bonds only
-    // todo. root site or bond means the first one that is stored
 
     std::vector<Cluster> _clusters;   // check and remove reapeted index manually
     // every birthTime we create a cluster we assign an set_ID for them
@@ -57,7 +53,7 @@ protected:
     double _entropy_jump_pc{}; // at what pc there have been the largest jump
     size_t _cluster_count{};
     value_type _bonds_in_cluster_with_size_two_or_more{0};   // total number of bonds in the clusters. all cluster has bonds > 1
-
+    bool _reached_critical = false; // true if the system has reached critical value
 
     value_type _total_relabeling{};
     double time_relabel{};
@@ -143,9 +139,6 @@ public:
     double entropy_by_bond(); // for future convenience. // the shannon entropy. the full calculations. time consuming
     double orderParameter();
     size_t numberOfcluster() const {return _cluster_count;}
-    void jump();
-    double largestEntropyJump()const { return _largest_jump_entropy;}
-    double largestEntropyJump_pc()const { return _entropy_jump_pc;}
 
 
     void get_cluster_info(
@@ -197,92 +190,45 @@ public:
  *
  */
 class SitePercolation_ps_v9 : public SqLatticePercolation{
-private:
-
-
 protected:
-    /*
-     * invariant property of lattice
-     */
-
     // flags to manipulate method
     bool _periodicity{false};
-//    bool _measure_spanning_cluster_by_bond{false};
-//    std::vector<CalculationFlags> _calculation_flags;
 
     value_type min_index; // minimum index = 0
     value_type max_index; // maximum index = length - 1
 
-
     // index sequence
     std::vector<Index> index_sequence;  // initialized once
-//    std::vector<Index> randomized_index_sequence;
     std::vector<value_type> randomized_index;
-
-
 
     // every birthTime we create a cluster we assign an set_ID for them
     int _cluster_id{};
-//    int _impurity_id{-2};   // id of the impure sites
-
-    /// Cluster tracker
-    // key      -> id of cluster
-    // value    -> index of cluster
-
     value_type _index_last_modified_cluster{};  // id of the last modified cluster
-
-
 
     // order parameter calculation ingradiants
     // id of the cluster which has maximum number of bonds. used to calculate order parameter
     value_type _number_of_bonds_in_the_largest_cluster{};
     value_type _number_of_sites_in_the_largest_cluster{};   // might be useful later
 
-
     Index _last_placed_site;    // keeps track of last placed site
 
     /**************
      * Spanning variables
      ************/
-
-//    int _first_spanning_cluster_id{-2};
-
-
     /*Holds indices on the edges*/
     std::vector<Index> _top_edge, _bottom_edge, _left_edge, _right_edge;
 
-    /*
-     * Contains one site of a spanning cluster
-     * so the using the site indices saved here we can find spanning cluster ids and indices
-     * from lattice.
-     * each time one site is saved here the indices of the cluster that it belongs to must be erased from
-     * BoundaryLR and BoundaryTB containers. It would make the spanning detection process faster. todo
-     */
-
-    bool _spanning_occured = false;
-
     std::vector<Index> _spanning_sites;
     std::vector<Index> _wrapping_sites;
-//    std::set<Site, ClusterIDComparator> _spanning_sites; // so that we don't have repeated values
-
     std::vector<value_type> number_of_sites_to_span;
     std::vector<value_type> number_of_bonds_to_span;
-//    std::unordered_set<int> spanning_cluster_ids;
-//    vector<int> wrapping_cluster_ids; // todo make global to the class
 
-
-    /*************************************
-     * Logging variable
-     ************************************/
-    bool _logging_flag{false};
     value_type _total_relabeling{};
 
     /*****************************************
      * Private Methods
      ******************************************/
-
     void relabel_sites(const std::vector<Index> &sites, int id_a, int delta_x_ab, int delta_y_ab) ;
-
 
     double time_relabel{};
 public:
@@ -328,10 +274,6 @@ public:
      * Calculations
      ***************************************************************/
 
-    value_type box_counting(value_type delta); // todo both at once
-    value_type box_counting_spanning(value_type delta) ;
-    std::array<value_type, 2> box_counting_v2(value_type delta);
-
     void add_entropy_for_bond(value_type index);
     void subtract_entropy_for_bond(const std::set<value_type> &found_index_set, int base=-1);
 
@@ -339,10 +281,7 @@ public:
      * Site placing methods
      *
      ************************************************/
-
-
     virtual bool occupy();
-
     value_type placeSite(Index site,
                          std::vector<Index>& neighbor_sites,
                          std::vector<BondIndex>& neighbor_bonds);
@@ -352,26 +291,20 @@ public:
                                   std::vector<Index>& neighbor_sites,
                                   std::vector<BondIndex>& neighbor_bonds);
 
-
     Index selectSite(); // selecting site
 
-
-    void connection_v1(Index site, std::vector<Index> &neighbors, std::vector<BondIndex> &bonds);
     void connection_v2(Index site, std::vector<Index> &site_neighbor, std::vector<BondIndex> &bond_neighbor);
-
 
     /*************************************************
      * Relabeling methods
      *************************************************/
-
     // applicable to weighted relabeling
-
     value_type relabel(value_type index_1, value_type index_2);
-    void relabel_sites(const Cluster&  clstr, int id);  // todo pass cluster as reference
+    void relabel_sites(const Cluster&  clstr, int id);
     void relabel_sites_v4(Index root_a, const Cluster& clstr_b); // relative index is set accordingly
     void relabel_sites_v5(Index root_a, const Cluster& clstr_b); // relative index is set accordingly
     void relabel_sites_v6(Index root_a, const Cluster& clstr_b, int id); // relative index is set accordingly
-    void relabel_bonds(const Cluster&  clstr, int id);  // todo
+    void relabel_bonds(const Cluster&  clstr, int id);
 
 
     /**********************************************
@@ -379,9 +312,7 @@ public:
      **********************************************/
     double numberOfOccupiedSite() const { return _number_of_occupied_sites;}
     double occupationProbability() const { return double(_number_of_occupied_sites)/maxSites();}
-    double spanningProbability() const; // number of bonds in spanning cluster / total number of bonds (2*l*l - 2*l)
     double entropy(); // the shannon entropy
-
 
     double orderParameter() const;  // number of bonds in the largest cluster / total number of bonds
     double orderParameter_v2() const;  // number of bonds in the largest cluster / total number of bonds
@@ -405,25 +336,14 @@ public:
     /***********************************
      * Spanning Detection
      **********************************/
-
-    bool detectSpanning_v5(const Index& site);
     bool detectSpanning_v6(const Index& site);
 
     void save_index_if_in_boundary_v2(const Index& site);
     bool check_if_id_matches(Index site, const std::vector<Index> &edge);
     bool check_if_id_matches_and_erase(Index site, std::vector<Index> &edge);
+    bool isSpanned() const { return _reached_critical;}
 
-
-//    bool isSpanned() const { return !_spanning_sites.empty();}
-    bool isSpanned() const { return !_spanning_sites.empty();}
-    void scanEdges();
-
-
-    /***********************************
-     * Wrapping Detection
-     **********************************/
     bool detectWrapping();
-
 
     /************************************
      *  Tracker
@@ -435,7 +355,6 @@ public:
     /*********************************
      * I/O functions
      * Printing Status
-     * // todo declare these as constants
      ********************************/
     Index lastPlacedSite() const { return _last_placed_site;}
 
@@ -500,24 +419,8 @@ public:
 
 /*******************************************************************************
  * Site Percolation Ballistic Deposition
- *
- * *************************************************************/
-/************************************
  * Extended from SitePercolation_ps_v9
- */
-
-/*******************************************************************************
- * definition:
- *
- *
- * specification:
- *
- *
- * performence:
- *      1. takes power law iteration with length with exponent ~2.2 in debug mode
- *          iteration_needed = constant*Length ^ (2.2)
- *      2. time ?? todo
- */
+ * *************************************************************/
 class SitePercolationBallisticDeposition_v2: public SitePercolation_ps_v9{
 protected:
     // elements of @indices_tmp will be erased if needed but not of @indices
@@ -541,7 +444,7 @@ public:
     Index select_site_upto_2nn(std::vector<Index> &sites, std::vector<BondIndex> &bonds);
 
 
-    void reset(); // todo
+    void reset();
     void initialize_indices();
 //    void randomize_index();
 

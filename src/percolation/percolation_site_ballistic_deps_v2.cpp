@@ -9,10 +9,6 @@
 
 using namespace std;
 
-/**************************
- * Ballistic Deposition
- */
-
 /**
  *
  * @param length
@@ -46,10 +42,6 @@ void SitePercolationBallisticDeposition_v2::initialize_indices() {
     }
 }
 
-
-/***************************************
- * occupy upto 1st nearset neighbor.
- * */
 
 
 /*******************************************
@@ -153,16 +145,12 @@ Index SitePercolationBallisticDeposition_v2::select_site_upto_2nn(
 
     Index central_site = index_sequence[indices_tmp[r]];
     Index selected_site;
-//    cout << "current site " << central_site << endl;
     // find the bonds for this site
 
 
-//    connection_v1(central_site, sites, bonds);
     connection_v2(central_site, sites, bonds);
 
     if (_lattice.getSite(central_site).isActive()){
-//        cout << "selected " << central_site << " : line " << __LINE__ << endl;
-
         bool flag_nn1 = true; // true means all 1st nearest neighbors are occupied
         bool flag_nn2 = true; // true means all 2nd nearest neighbors are occupied
 //        cout << "if one of the neighbor is inactive. it's engouh to go on" << endl;
@@ -219,7 +207,6 @@ Index SitePercolationBallisticDeposition_v2::select_site_upto_2nn(
                 if(flag_nn1 && flag_nn2){
                     // erase the index, since its 1st nearest neighbors are occupied
                     // and 2nd nearest neighbors are also occupied
-//                    cout << "ignoring this step : line " << __LINE__ << endl;
                     indices_tmp.erase(indices_tmp.begin()+r);
                 }
 
@@ -231,7 +218,6 @@ Index SitePercolationBallisticDeposition_v2::select_site_upto_2nn(
             selected_site = nn1;
         }
 
-//        cout << "choosing " << selected_site << " out of the neighbors : line " << __LINE__ << endl;
         sites.clear();
         bonds.clear();
 
@@ -297,9 +283,6 @@ value_type SitePercolationBallisticDeposition_v2::placeSite_1nn_v2() {
     return placeSite_weighted(_last_placed_site, sites, bonds);
 }
 
-
-
-
 /**
  *
  * @return
@@ -321,4 +304,3 @@ value_type SitePercolationBallisticDeposition_v2::placeSite_2nn_v1() {
     }
     return ULONG_MAX;
 }
-

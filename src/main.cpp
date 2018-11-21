@@ -24,7 +24,7 @@ using namespace std;
  */
 void run_in_main(int argc, char** argv){
     // Simulating site percolation for l=0
-    simulate_site_percolation(argc, argv);
+    simulate_site_percolation_T<SitePercolation_ps_v9>(argc, argv);
 
     // Simulating site percolation for l=1
     simulate_site_percolation_T<SitePercolationBallisticDeposition_L1_v2>(argc, argv); // 2018.11.03

@@ -162,12 +162,6 @@ SqLatticePercolation::get_cluster_info(
             site.push_back(1); // cluster of length 1
         }
     }
-//    if(site.size() != bond.size()){
-//        cout << "Size mismatched : line " << __LINE__ << endl;
-//    }
-//    cout << "total bonds " << total_bond << endl;
-//    cout << "tatal sites " << total_site << endl;
-
 }
 
 void SqLatticePercolation::reset() {
@@ -185,19 +179,7 @@ void SqLatticePercolation::reset() {
     _total_relabeling = 0;
     time_relabel = 0;
     _cluster_count = 0;
-}
-
-void SqLatticePercolation::jump() {
-
-    double delta_H{};
-    if(_index_sequence_position > 1) {
-        delta_H = _entropy_current - _entropy_previous;
-    }
-    if(abs(delta_H) > abs(_largest_jump_entropy)){
-        _largest_jump_entropy = delta_H;
-        _entropy_jump_pc = _occuption_probability;
-    }
-    _entropy_previous = _entropy_current; // be ready for next step
+    _reached_critical = false;
 }
 
 

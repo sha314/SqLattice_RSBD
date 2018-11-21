@@ -20,7 +20,6 @@
  * single Site of a lattice
  */
 struct Site{
-
     /**
      * if true -> site is placed.
      * if false -> the (empty) position is there but the site is not (required for site percolation)
@@ -28,21 +27,11 @@ struct Site{
     bool _status{false};
     int _group_id{-1};
     Index _id{};
-    value_type _weight{};    // when one site is occupied multiple times only weight increases by occupation
 
     //relative distance from the root site. {0,0} if it is the root site
-    //very useful for detecting wrapping // todo
+    //for detecting wrapping
     IndexRelative _relative_index{0,0};
 
-//    std::vector<Index> _neighbor{};
-    // _connection[0] -> _connection between "set_ID" and "_neighbor[0]"
-
-    /**
-     * using set gives following advantages
-     * 1. Keeps elements sorted
-     * 2. automatically manage repeated value
-     */
-//    std::set<int> _connection{};
 
 public:
 
@@ -60,7 +49,6 @@ public:
         }
         _id.row_ = id.row_;
         _id.column_ = id.column_;
-//        _neighbor = Lattice_Helper::get_neighbor(id, length);
     }
 
 
@@ -87,8 +75,6 @@ public:
         return ss;
     }
 
-    value_type weight() const {return _weight;}
-    void increaseWeight(){_weight += 1;}
 
     void relativeIndex(IndexRelative r){
         _relative_index = r;
@@ -99,7 +85,6 @@ public:
     }
 
     IndexRelative relativeIndex() const {return _relative_index;}
-
 };
 
 std::ostream& operator<<(std::ostream& os, const Site& site);

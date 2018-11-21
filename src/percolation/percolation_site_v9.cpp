@@ -130,8 +130,6 @@ void SitePercolation_ps_v9::reset() {
     _left_edge.clear();
     _right_edge.clear();
 
-    _spanning_occured = false;
-
     initialize();
     randomize_v2();
     time_relabel = 0;
@@ -225,7 +223,6 @@ void SitePercolation_ps_v9::track_numberOfSitesInLargestCluster(){
  * Find one row from _cluster to place 4 or less new bonds
  * Also remove the matched index values, because they will be inserted later.
  * This gives an advantage, i.e., you don't need to perform a checking.
- * todo takes so much time
  * @param hv_bonds
  * @return a set
  */
@@ -487,215 +484,6 @@ IndexRelative SitePercolation_ps_v9::getRelativeIndex(Index root, Index site_new
     IndexRelative r =  {indexRelative_root.x_ + delta_x, indexRelative_root.y_ + delta_y};
 //    cout << "Relative index of site_new " << r << endl;
     return r;
-}
-
-
-
-
-/**
- * Take a bond index only if the corresponding site is active
- * lengthy but straight forward
- * @param site
- * @param neighbors
- * @param bonds
- */
-void SitePercolation_ps_v9::connection_v1(Index site, vector<Index> &neighbors, vector<BondIndex> &bonds)
-{
-    clock_t t = clock();
-    value_type prev_column  = (site.column_ + length() - 1) % length();
-    value_type prev_row     = (site.row_ + length() - 1) % length();
-    value_type next_row     = (site.row_ + 1) % length();
-    value_type next_column  = (site.column_ + 1) % length();
-    if(_periodicity){
-        neighbors.resize(4);
-        neighbors[0] = {site.row_, next_column};
-        neighbors[1] = {site.row_, prev_column};
-        neighbors[2] = {next_row, site.column_};
-        neighbors[3] = {prev_row, site.column_};
-
-        bonds.reserve(4);
-        if(!_lattice.getSite(neighbors[0]).isActive()) {
-            bonds.push_back({BondType::Horizontal, site.row_, site.column_});
-        }
-        if(!_lattice.getSite(neighbors[1]).isActive()){
-            bonds.push_back({BondType::Horizontal, site.row_, prev_column});
-        }
-        if(!_lattice.getSite(neighbors[2]).isActive()){
-            bonds.push_back({BondType::Vertical,    site.row_, site.column_});
-        }
-        if(!_lattice.getSite(neighbors[3]).isActive()){
-            bonds.push_back({BondType::Vertical, prev_row, site.column_});
-        }
-
-    }
-    else{
-        // without periodicity
-        if (site.row_ == min_index) { // top edge including corners
-            if(site.column_ == min_index){
-                // upper left corner
-
-                neighbors.resize(2);
-                neighbors[0] = {site.row_, next_column};
-                neighbors[1] = {next_row, site.column_};
-
-                bonds.reserve(2);
-                if(!_lattice.getSite(neighbors[0]).isActive()){
-                    bonds.push_back({BondType::Horizontal, site.row_, site.column_});
-                }
-                if(!_lattice.getSite(neighbors[1]).isActive()){
-                    bonds.push_back({BondType::Vertical, site.row_, site.column_});
-                }
-
-            }
-            else if(site.column_ == max_index){
-                // upper right corner
-
-                neighbors.resize(2);
-                neighbors[0] = {site.row_, prev_column};
-                neighbors[1] = {next_row, site.column_};
-
-                bonds.reserve(2);
-                if(!_lattice.getSite(neighbors[0]).isActive()){
-                    bonds.push_back({BondType::Horizontal, site.row_, prev_column});
-                }
-                if(!_lattice.getSite(neighbors[1]).isActive()){
-                    bonds.push_back({BondType::Vertical, site.row_, site.column_});
-                }
-
-            }
-            else{
-                // top edge excluding corners
-                neighbors.resize(3);
-                neighbors[0] = {site.row_, next_column};
-                neighbors[1] = {site.row_, prev_column};
-                neighbors[2] = {next_row, site.column_};
-
-                bonds.reserve(4);
-                if(!_lattice.getSite(neighbors[0]).isActive()) {
-                    bonds.push_back({BondType::Horizontal, site.row_, site.column_});
-                }
-                if(!_lattice.getSite(neighbors[1]).isActive()){
-                    bonds.push_back({BondType::Horizontal, site.row_, prev_column});
-                }
-                if(!_lattice.getSite(neighbors[2]).isActive()){
-                    bonds.push_back({BondType::Vertical,    site.row_, site.column_});
-                }
-
-            }
-        }
-        else if (site.row_ == max_index) { // bottom edge including corners
-            if (site.column_ == min_index) {
-                // lower left corner
-                neighbors.resize(2);
-                neighbors[0] = {site.row_, next_column};
-                neighbors[1] = {prev_row, site.column_};
-
-                bonds.reserve(2);
-                if(!_lattice.getSite(neighbors[0]).isActive()){
-                    bonds.push_back({BondType::Horizontal, site.row_, site.column_});
-                }
-                if(!_lattice.getSite(neighbors[1]).isActive()){
-                    bonds.push_back({BondType::Vertical, prev_row, site.column_});
-                }
-
-            } else if (site.column_ == max_index) {
-                // lower right corner
-                neighbors.resize(2);
-                neighbors[0] = {site.row_, prev_column};
-                neighbors[1] = {prev_row, site.column_};
-
-                bonds.reserve(2);
-                if(!_lattice.getSite(neighbors[0]).isActive()){
-                    bonds.push_back({BondType::Horizontal, site.row_, prev_column});
-                }
-                if(!_lattice.getSite(neighbors[1]).isActive()){
-                    bonds.push_back({BondType::Vertical, prev_row, site.column_});
-                }
-
-            } else {
-                // bottom edge excluding corners
-                //  bottom edge
-                neighbors.resize(3);
-                neighbors[0] = {site.row_, next_column};
-                neighbors[1] = {site.row_, prev_column};
-                neighbors[2] = {prev_row, site.column_};
-
-                bonds.reserve(3);
-                if(!_lattice.getSite(neighbors[0]).isActive()) {
-                    bonds.push_back({BondType::Horizontal, site.row_, site.column_});
-                }
-                if(!_lattice.getSite(neighbors[1]).isActive()){
-                    bonds.push_back({BondType::Horizontal, site.row_, prev_column});
-                }
-                if(!_lattice.getSite(neighbors[2]).isActive()){
-                    bonds.push_back({BondType::Vertical, prev_row, site.column_});
-                }
-            }
-        }
-            /* site.x_ > min_index && site.x_ < max_index &&  is not possible anymore*/
-        else if (site.column_ == min_index) { // left edge not in the corners
-            neighbors.resize(3);
-            neighbors[0] = {site.row_, next_column};
-            neighbors[1] = {next_row, site.column_};
-            neighbors[2] = {prev_row, site.column_};
-
-            bonds.reserve(3);
-            if(!_lattice.getSite(neighbors[0]).isActive()) {
-                bonds.push_back({BondType::Horizontal, site.row_, site.column_});
-            }
-            if(!_lattice.getSite(neighbors[1]).isActive()){
-                bonds.push_back({BondType::Vertical,    site.row_, site.column_});
-            }
-            if(!_lattice.getSite(neighbors[2]).isActive()){
-                bonds.push_back({BondType::Vertical, prev_row, site.column_});
-            }
-        }
-        else if (site.column_ == max_index) {
-            // right edge no corners
-
-            neighbors.resize(3);
-            neighbors[0] = {site.row_, prev_column};
-            neighbors[1] = {next_row, site.column_};
-            neighbors[2] = {prev_row, site.column_};
-
-            bonds.reserve(3);
-            if(!_lattice.getSite(neighbors[0]).isActive()){
-                bonds.push_back({BondType::Horizontal, site.row_, prev_column});
-            }
-            if(!_lattice.getSite(neighbors[1]).isActive()){
-                bonds.push_back({BondType::Vertical,    site.row_, site.column_});
-            }
-            if(!_lattice.getSite(neighbors[2]).isActive()){
-                bonds.push_back({BondType::Vertical, prev_row, site.column_});
-            }
-        }
-        else {
-            // 1 level inside the lattice
-            // not in any the boundary
-            neighbors.resize(4);
-            neighbors[0] = {site.row_, next_column};
-            neighbors[1] = {site.row_, prev_column};
-            neighbors[2] = {next_row, site.column_};
-            neighbors[3] = {prev_row, site.column_};
-
-            bonds.reserve(4);
-            if(!_lattice.getSite(neighbors[0]).isActive()) {
-                bonds.push_back({BondType::Horizontal, site.row_, site.column_});
-            }
-            if(!_lattice.getSite(neighbors[1]).isActive()){
-                bonds.push_back({BondType::Horizontal, site.row_, prev_column});
-            }
-            if(!_lattice.getSite(neighbors[2]).isActive()){
-                bonds.push_back({BondType::Vertical,    site.row_, site.column_});
-            }
-            if(!_lattice.getSite(neighbors[3]).isActive()){
-                bonds.push_back({BondType::Vertical, prev_row, site.column_});
-            }
-        }
-
-    }
-
-
 }
 
 
@@ -1238,100 +1026,6 @@ void SitePercolation_ps_v9::wrappingIndices() const {
 
 
 /**
- * todo problem
- * successful : but result is not entirely correct
- * length       time
- * 200          5.265000 sec
- * 500          2 min 29.656000
- * @param site : Check spanning for this argument
- * @return
- */
-bool SitePercolation_ps_v9::detectSpanning_v5(const Index& site) {
-//    cout << "Entry -> detectSpanning_v4() : line " << __LINE__ << endl;
-    if(_periodicity) {
-        cout << "Cannot detect spanning if _periodicity if ON: line " << __LINE__ << endl;
-        return false;
-    }
-
-
-    // first check if the site with a cluster id is already a spanning site
-    for(const Index& ss: _spanning_sites){
-        if(_lattice.getSite(ss).get_groupID() == _lattice.getSite(site).get_groupID()){
-            cout << "Already a spanning site : line " << __LINE__ << endl;
-            return true;
-        }
-    }
-
-    // only check for the newest site placed
-    if(site.row_ == min_index){ // top index
-        _top_edge.push_back(site);
-    }
-    else if(site.row_ == max_index){
-        _bottom_edge.push_back(site);
-    }
-
-    // checking column indices for Left-Right boundary
-    if(site.column_ == min_index){ // left edge
-        _left_edge.push_back(site);
-    }
-    else if(site.column_ == max_index){
-        _right_edge.push_back(site);
-    }
-
-    if(_index_sequence_position < length()){
-//        cout << "Not enough site to span : line " << __LINE__ << endl;
-        return false;
-    }
-
-    // now do the matching with top and bottom for vertical spanning
-    // meaning new site is added to _spanning_sites so remove them from top and bottom edges
-    vector<Index>::iterator it_top = _top_edge.begin();
-    vector<Index>::iterator it_bot = _bottom_edge.begin();
-    bool found_spanning_site = false;
-    for(; it_top < _top_edge.end(); ++it_top){
-        for(; it_bot < _bottom_edge.end(); ++it_bot){
-            if(_lattice.getSite(*it_top).get_groupID() == _lattice.getSite(*it_bot).get_groupID()){
-                _spanning_sites.push_back(*it_top);
-//                _spanning_occured = true;
-//                spanning_id = _lattice.getSite(*it_bot).set_groupID();
-                found_spanning_site = true;
-                _bottom_edge.erase(it_bot);
-            }
-        }
-        if(found_spanning_site){
-            found_spanning_site = false;
-            _top_edge.erase(it_top);
-        }
-    }
-
-
-    found_spanning_site = false;
-    // now do the matching with left and right for horizontal spanning
-    // meaning new site is added to _spanning_sites so remove them from top and bottom edges
-    vector<Index>::iterator it_lft = _left_edge.begin();
-    vector<Index>::iterator it_rht = _right_edge.begin();
-    for(; it_lft < _left_edge.end(); ++it_lft){
-        for(; it_rht < _right_edge.end(); ++it_rht){
-            if(_lattice.getSite(*it_lft).get_groupID() == _lattice.getSite(*it_rht).get_groupID()){
-                _spanning_sites.push_back(*it_lft);
-//                _spanning_occured = true;
-//                spanning_id = _lattice.getSite(*it_bot).set_groupID();
-                found_spanning_site = true;
-                _right_edge.erase(it_rht);
-            }
-        }
-        if(found_spanning_site){
-            found_spanning_site = false;
-            _left_edge.erase(it_lft);
-        }
-    }
-
-
-    return !_spanning_sites.empty();
-}
-
-
-/**
  * success : gives correct result
  * length       time
  * 200          7.859000 sec
@@ -1345,6 +1039,9 @@ bool SitePercolation_ps_v9::detectSpanning_v6(const Index& site) {
     if(_periodicity) {
         cout << "Cannot detect spanning if _periodicity if ON: line " << __LINE__ << endl;
         return false;
+    }
+    if(_reached_critical ){
+        return true;  // we have already reached critical point
     }
 
     // first check if the site with a cluster id is already a spanning site
@@ -1398,7 +1095,7 @@ bool SitePercolation_ps_v9::detectSpanning_v6(const Index& site) {
                     if(id == _lattice.getSite(*it_bot).get_groupID()){
                         // match found !
                         if(!check_if_id_matches(*it_top ,_spanning_sites)) {
-//                            _spanning_occured = true;
+                            _reached_critical = true;
                             _spanning_sites.push_back(*it_top);
                         }
                         found_spanning_site = true;
@@ -1420,7 +1117,7 @@ bool SitePercolation_ps_v9::detectSpanning_v6(const Index& site) {
                     if (id == _lattice.getSite(*it_top).get_groupID()) {
                         // match found !
                         if (!check_if_id_matches(*it_top, _spanning_sites)) {
-//                            _spanning_occured = true;
+                            _reached_critical = true;
                             _spanning_sites.push_back(*it_top);
                         }
                         found_spanning_site = true;
@@ -1447,7 +1144,7 @@ bool SitePercolation_ps_v9::detectSpanning_v6(const Index& site) {
                     if (id == _lattice.getSite(*it_rht).get_groupID()) {
                         if (!check_if_id_matches(*it_lft, _spanning_sites)) {
                             _spanning_sites.push_back(*it_lft);
-//                            _spanning_occured = true;
+                            _reached_critical = true;
                         }
                         found_spanning_site = true;
                         _right_edge.erase(it_rht);
@@ -1466,7 +1163,7 @@ bool SitePercolation_ps_v9::detectSpanning_v6(const Index& site) {
                     if (id == _lattice.getSite(*it_lft).get_groupID()) {
                         if (!check_if_id_matches(*it_lft, _spanning_sites)) {
                             _spanning_sites.push_back(*it_lft);
-//                            _spanning_occured = true;
+                            _reached_critical = true;
                         }
                         found_spanning_site = true;
                         _left_edge.erase(it_lft);
@@ -1494,15 +1191,6 @@ bool SitePercolation_ps_v9::detectSpanning_v6(const Index& site) {
 }
 
 
-/**
- * todo scan the edges and save it in the edge indices
- */
-void SitePercolation_ps_v9::scanEdges() {
-
-}
-
-
-
 
 /***********************************
  * Wrapping Detection
@@ -1518,20 +1206,21 @@ bool SitePercolation_ps_v9::detectWrapping() {
         return false;
     }
 
+    if(_reached_critical){
+        return true; // reached critical in previous step
+    }
     // check if it is already a wrapping site
     int id = _lattice.getSite(site).get_groupID();
     int tmp_id{};
     for (auto i: _wrapping_sites){
         tmp_id = _lattice.getSite(i).get_groupID();
         if(id == tmp_id ){
-//            cout << "Already a wrappig cluster : line " << __LINE__ << endl;
             return true;
         }
     }
 
     // get four neighbors of site always. since wrapping is valid if periodicity is implied
     vector<Index> sites = _lattice.get_neighbor_site_indices(site);
-
 
     if(sites.size() < 2){ // at least two neighbor of  site is required
         return false;
@@ -1544,37 +1233,27 @@ bool SitePercolation_ps_v9::detectWrapping() {
                 // different cluster
                 continue;
             }
-//            cout << "belongs to the same cluster : line " << __LINE__ << endl;
-
+            // belongs to the same cluster
             b = _lattice.getSite(a).relativeIndex();
 //            cout << "neibhbor " << a << " relative " << b << endl;
             if(abs(irel.x_ - b.x_) > 1 || abs(irel.y_ - b.y_) > 1){
 //                cout << "Wrapping : line " << __LINE__ << endl;
                 _wrapping_sites.push_back(site);
+                _reached_critical = true;
                 return true;
             }
         }
     }
-
-//    cout << "wrapping sites " << _wrapping_indices << endl;
     // if %_wrapping_indices is not empty but wrapping is not detected for the current site (%site)
     // that means there is wrapping but not for the %site
     return !_wrapping_sites.empty();
 }
-
-
 
 /********************************************************************
  * Relabeling
  *
  *********************************************************************/
 
-
-/**
- *
- * @param clstr
- * @param id
- */
 void SitePercolation_ps_v9::relabel_sites(const Cluster& clstr, int id) {
     const vector<Index> sites = clstr.getSiteIndices();
     for(auto a: sites){
@@ -1608,7 +1287,7 @@ void SitePercolation_ps_v9::relabel_sites_v4(Index site_a, const Cluster& clstr_
             site_b = n;
 //            cout << "neighbor  of" << site_a << " is " << site_b << endl;
             flag = true;
-            break; // todo ?
+            break;
 
         }
     }
@@ -1667,7 +1346,7 @@ void SitePercolation_ps_v9::relabel_sites_v5(Index site_a, const Cluster& clstr_
             site_b = n;
 //            cout << "neighbor  of" << site_a << " is " << site_b << endl;
             flag = true;
-            break; // todo ?
+            break;
 
         }
     }
@@ -1719,7 +1398,7 @@ void SitePercolation_ps_v9::relabel_sites_v6(Index site_a, const Cluster& clstr_
             site_b = n;
 //            cout << "neighbor  of" << site_a << " is " << site_b << endl;
             flag = true;
-            break; // todo ?
+            break;
 
         }
     }
@@ -1775,18 +1454,6 @@ void SitePercolation_ps_v9::relabel_bonds(const Cluster& clstr, int id) {
 /**********************************************
  * Information about current state of Class
  **********************************************/
-/**
- * number of bonds in spanning cluster / total number of bonds
- * here, total number of bonds = (2*l*l - 2*l)
- *  since periodic boundary condition is turned off
- * @return
- */
-double SitePercolation_ps_v9::spanningProbability() const {
-    // TODO
-    cout << "Not implemented : line " << __LINE__ << endl;
-    return 0;
-}
-
 
 /**
  * Entropy calculation is performed here. The fastest method possible.
@@ -1803,7 +1470,6 @@ double SitePercolation_ps_v9::entropy() {
     _entropy_current =  _entropy + H;
     return _entropy_current;
 }
-
 
 
 /**
@@ -2061,104 +1727,6 @@ int SitePercolation_ps_v9::birthTimeOfACluster(int id) const {
 }
 
 
-
-/**
- * Box counting method for fractal dimension calculation
- * @param delta
- * @return
- */
-value_type SitePercolation_ps_v9::box_counting(value_type delta) {
-    value_type counter{};
-    if(length() % delta == 0){
-        for(value_type r{} ; r < length() ; r += delta){
-            for(value_type c{}; c < length() ; c += delta){
-                if(anyActiveSite(r, c, delta)){
-                    ++ counter;
-                }
-            }
-        }
-    }
-    else{
-        cout << "Delta size is not corrent" << endl;
-    }
-
-    return counter;
-}
-
-
-/**
- * Box counting method for fractal dimension calculation
- * @param delta
- * @return
- */
-array<value_type, 2> SitePercolation_ps_v9::box_counting_v2(value_type delta) {
-    int spanning_cluster_id = _lattice.getSite(_spanning_sites.front()).get_groupID();
-    value_type counter{}, spanning_counter{};
-    bool foud_site{false}, found_spanning_site{false};
-    int current_id{-1};
-    if(length() % delta == 0){
-        for(value_type r{} ; r < length() ; r += delta){
-            for(value_type c{}; c < length() ; c += delta){
-                for(value_type i{} ; i < delta ; ++i) {
-                    for (value_type j{}; j < delta; ++j) {
-                        current_id = _lattice.getSite({i + r, j + c}).get_groupID();
-                        if(current_id >= 0){
-                            foud_site = true;
-                            if(current_id == spanning_cluster_id){
-                                found_spanning_site = true;
-                            }
-                        }
-                        if(foud_site && found_spanning_site){
-                            break; // both are true no need to investigate further
-                        }
-                    }
-                }
-
-                if(foud_site){
-                    ++ counter;
-                    foud_site = false;
-                }
-                if(found_spanning_site){
-                    ++spanning_counter;
-                    found_spanning_site = false;
-                }
-            }
-        }
-    }
-    else{
-        cout << "Delta size is not corrent" << endl;
-    }
-
-    return array<value_type , 2>{counter, spanning_counter};
-}
-
-
-
-
-/**
- * Box counting method for fractal dimension calculation
- * @param delta
- * @return
- */
-value_type SitePercolation_ps_v9::box_counting_spanning(value_type delta) {
-    value_type counter{};
-    if(length() % delta == 0){
-        for(value_type r{} ; r < length() ; r += delta){
-            for(value_type c{}; c < length() ; c += delta){
-                if(anyActiveSpanningSite(r, c, delta)){
-                    ++counter;
-                }
-            }
-        }
-    }
-    else{
-        cout << "Delta size is not corrent" << endl;
-    }
-
-    return counter;
-}
-
-
 /**
  * Return true if there is at least one active site in the region r, r + delta and c, c + delta
  * @param r
@@ -2275,7 +1843,4 @@ void SitePercolation_ps_v9::writeVisualLatticeData(const string &filename, bool 
     }
     fout.close();
 }
-
-
-
 

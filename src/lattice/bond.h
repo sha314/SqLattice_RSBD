@@ -29,11 +29,8 @@ struct Bond{
 
     BondType bondType;
     //relative distance from the root site. {0,0} if it is the root site
-    //very useful for detecting wrapping // todo
     IndexRelative _relative_index{0,0};
 
-//    bool horizontal{false};
-//    bool vertical{false};
 
     Index _end1;
     Index _end2;
@@ -48,20 +45,14 @@ struct Bond{
         _end2.row_ = end2.row_;
         _end2.column_ = end2.column_;
 
-        // correct the bond here
         _length = length;
-        // check if the bond is valid??
+        // check if the bond is valid
         if(_end1.row_ == _end2.row_){
             bondType = BondType::Horizontal;
-//            horizontal = true;
             // means x_ values are equal
             if(_end1.column_ > _end2.column_){
-                // case (0,0)<->(0,4) for L=5 and
-                // case (0,4)<->(0,0) are equal for bond like this end1=(0,4) end2=(0,0)
-                // for all other cases lower index is end1
                 if(_end1.column_ == _length-1 && _end2.column_ ==0){
                     // do nothing
-//                    std::cout << "_end1.y_ == _length-1 && _end2.y_ ==0 : line " << __LINE__ << std::endl;
                 }
                 else{
                     // sort them out
@@ -79,15 +70,9 @@ struct Bond{
         }
         else if(_end1.column_ == _end2.column_){
             bondType = BondType::Vertical;
-//            vertical = true;
             // means y_ values are equal
             if(_end1.row_ > _end2.row_){
-                // case (0,0)<->(4,0) for L=5 and
-                // case (4,0)<->(0,0) are equal for bond like this end1=(4,0) end2=(0,0)
-                // for all other cases lower index is end1
                 if(_end1.row_ == _length-1 && _end2.row_ ==0){
-                    // do nothind
-//                    std::cout << "_end1.x_ == _length-1 && _end2.x_ ==0 : line " << __LINE__ << std::endl;
                 }
                 else{
                     // sort them out
@@ -101,18 +86,14 @@ struct Bond{
                     _end2.row_ = end1.row_;
                 }
             }
-//            _id = set_ID<3>({1, _end1.x_, _end1.y_});
         }
         else{
             std::cout << '(' << _end1.row_ << ',' << _end1.column_ << ')' << "<->"
                     << '(' << _end2.row_ << ',' << _end2.column_ << ')'
                     << " is not a valid bond : line " << __LINE__ << std::endl;
-//            _id = set_ID<3>({-1, -1, -1});
         }
 
-//        _id = {(horizontal) ? 0ul : 1ul, _end1.x_, end1.y_};  // unsigned long
         _id = BondIndex(bondType, _end1.row_, _end1.column_);  // unsigned long
-
     }
 
     std::vector<Index> getSites() const { return {_end1, _end2};}
@@ -137,22 +118,6 @@ struct Bond{
 */
     int get_groupID() const {return _group_id;}
     void set_groupID(int g_id) {_group_id = g_id;}
-
-//    std::stringstream getBondString() const {
-//        std::stringstream ss;
-//        if(isActive()) {
-//            // place '-' for horizontal bond and '|' for vertical bong
-//            if(horizontal) {
-//                ss << '(' << _end1 << "<->" << _end2 << ')';
-//            }
-//            else {
-//                ss << '(' << _end1 << "<|>" << _end2 << ')';
-//            }
-//        }
-//        else
-//            ss << "(**)";
-//        return ss;
-//    }
 
     std::stringstream getBondString() const {
         std::stringstream ss;
