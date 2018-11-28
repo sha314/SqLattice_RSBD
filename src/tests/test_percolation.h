@@ -20,9 +20,7 @@
  * @param argv   : argv from commandline
  */
 template<class PType>
-void simulate_site_percolation_T(int argc, char **argv) {
-    value_type length = atoi(argv[1]);
-    value_type ensemble_size = atoi(argv[2]);
+void simulate_site_percolation_T(value_type length, value_type ensemble_size) {
 
     std::cout << "length " << length << " ensemble_size " << ensemble_size << std::endl;
 

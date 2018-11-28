@@ -23,14 +23,22 @@ using namespace std;
  * @param argv
  */
 void run_in_main(int argc, char** argv){
-    // Simulating site percolation for l=0
-    simulate_site_percolation_T<SitePercolation_ps_v9>(argc, argv);
 
-    // Simulating site percolation for l=1
-    simulate_site_percolation_T<SitePercolationBallisticDeposition_L1_v2>(argc, argv); // 2018.11.03
+    int l = atoi(argv[1]);
+    value_type length = atoi(argv[2]);
+    value_type ensemble_size = atoi(argv[3]);
 
-    // Simulating site percolation for l=2
-    simulate_site_percolation_T<SitePercolationBallisticDeposition_L2_v2>(argc, argv); // 2018.11.03
+    if(l==1) {
+        cout << "Simulating site percolation for l=1" << endl;
+        simulate_site_percolation_T<SitePercolationBallisticDeposition_L1_v2>(length, ensemble_size); // 2018.11.03
+    }
+    else if(l==2) {
+        cout << "Simulating site percolation for l=2" << endl;
+        simulate_site_percolation_T<SitePercolationBallisticDeposition_L2_v2>(length, ensemble_size); // 2018.11.03
+    }else{
+        cout << "Simulating site percolation for l=0" << endl;
+        simulate_site_percolation_T<SitePercolation_ps_v9>(length, ensemble_size);
+    }
 }
 
 
@@ -41,9 +49,9 @@ void run_in_main(int argc, char** argv){
  *
  ***************************************/
 int main(int argc, char** argv) {
-    cout << currentTime() << endl;
 
-    cout << "Compiled on " << __DATE__ << "\t at " << __TIME__ << endl;
+    cout << "Running started at : " << currentTime() << endl;
+    cout << "Compiled on        : " << __DATE__ << "\t at " << __TIME__ << endl;
     std::cout << "Percolation in a Square Lattice" << std::endl;
     auto t_start = std::chrono::system_clock::now();
 
