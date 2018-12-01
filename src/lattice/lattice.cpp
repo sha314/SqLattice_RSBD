@@ -524,13 +524,19 @@ Site& SqLattice::getSite(Index index) {
     return _sites[index.row_][index.column_];
 }
 
-//Site&& SqLattice::getSiteR(Index index) {
-//    Site a = _sites[index.x_][index.y_];
-//    return std::move(a);
-//}
 
 const Site& SqLattice::getSite(Index index) const {
     return _sites[index.row_][index.column_];
+}
+
+const Bond& SqLattice::getBond(BondIndex index) const {
+    if (index.horizontal()) {
+        return _h_bonds[index.row_][index.column_];
+    }
+    if (index.vertical()) {
+        return _v_bonds[index.row_][index.column_];
+    }
+    throw InvalidBond{"Invalid bond : line " + to_string(__LINE__)};
 }
 
 void SqLattice::setGroupID(Index index, int group_id){
@@ -546,11 +552,11 @@ void SqLattice::setGroupID(BondIndex index, int group_id){
     }
 }
 
-int SqLattice::getGroupID(Index index){
+const int SqLattice::getGroupID(Index index)const{
     return _sites[index.row_][index.column_].get_groupID();
 }
 
-int SqLattice::getGroupID(BondIndex index){
+const int SqLattice::getGroupID(BondIndex index)const{
     if(index.horizontal()){
         return _h_bonds[index.row_][index.column_].get_groupID();
     }
@@ -558,23 +564,6 @@ int SqLattice::getGroupID(BondIndex index){
         return  _v_bonds[index.row_][index.column_].get_groupID();
     }
     return -1;
-}
-
-//Bond Lattice::get_h_bond(Index set_ID) {
-//    return _h_bonds[id.x_][set_ID.y_];
-//}
-//
-//Bond Lattice::get_v_bond(Index set_ID) {
-//    return _v_bonds[id.x_][set_ID.y_];
-//}
-
-
-Bond& SqLattice::get_h_bond(Index id) {
-    return _h_bonds[id.row_][id.column_];
-}
-
-Bond& SqLattice::get_v_bond(Index id) {
-    return _v_bonds[id.row_][id.column_];
 }
 
 

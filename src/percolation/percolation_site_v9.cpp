@@ -220,28 +220,6 @@ void SitePercolation_ps_v9::track_numberOfSitesInLargestCluster(){
 
 /**
  *
- * Find one row from _cluster to place 4 or less new bonds
- * Also remove the matched index values, because they will be inserted later.
- * This gives an advantage, i.e., you don't need to perform a checking.
- * @param hv_bonds
- * @return a set
- */
-set<value_type>
-SitePercolation_ps_v9::find_index_for_placing_new_bonds(const vector<Index> &neighbors) {
-    set<value_type> found_index_set;    // use set to prevent repeated index
-    for (auto n: neighbors) {
-        int id = _lattice.getSite(n).get_groupID();
-        if(id >=0) {
-            found_index_set.insert(value_type(id));
-        }
-    }
-
-    return found_index_set;
-}
-
-
-/**
- *
  * @param neighbors         :
  * @param found_index_set   : index of the clusters that will be merged together.
  *                            Does not contain the base cluster index or id.
@@ -256,7 +234,7 @@ SitePercolation_ps_v9::find_cluster_index_for_placing_new_bonds(
     int base_id{-1};
     int id;
     for (auto n: neighbors) {
-        id = _lattice.getSite(n).get_groupID();
+        id = _lattice.getGroupID(n);
         if(id >=0) {
             index = value_type(id);
             tmp = _clusters[index].numberOfSites();
@@ -303,7 +281,7 @@ value_type SitePercolation_ps_v9::manage_clusters(
         // find which of the neighbors are of id_base as the base cluster
         IndexRelative r;
         for(auto n: neibhgors){
-            if(_lattice.getSite(n).get_groupID() == id_base){
+            if(_lattice.getGroupID(n) == id_base){
                 // find relative index with respect to this site
                 r = getRelativeIndex(n, site);
                 break; // since first time r is set running loop is doing no good
@@ -313,7 +291,7 @@ value_type SitePercolation_ps_v9::manage_clusters(
         // put_values_to_the_cluster new values in the 0-th found index
         _clusters[base].insert(hv_bonds);
         _lattice.getSite(site).relativeIndex(r);
-        _lattice.getSite(site).set_groupID(id_base); // relabeling for 1 site
+        _lattice.setGroupID(site, id_base); // relabeling for 1 site
 
         // merge clusters with common values from all other cluster        // merge clusters with common values from all other cluster
 
@@ -337,7 +315,7 @@ value_type SitePercolation_ps_v9::manage_clusters(
         // create new element for the cluster
         _clusters.push_back(Cluster(_cluster_id));
         value_type _this_cluster_index = _clusters.size() -1;
-        _lattice.getSite(site).set_groupID(_cluster_id); // relabeling for 1 site
+        _lattice.setGroupID(site, _cluster_id); // relabeling for 1 site
         _cluster_count++; // increasing number of clusters
         _cluster_id++;
         _clusters.back().insert(hv_bonds);
@@ -597,10 +575,8 @@ void SitePercolation_ps_v9::connection_v2(Index site, vector<Index> &site_neighb
  */
 bool SitePercolation_ps_v9::check_if_id_matches(Index site, const vector<Index> &edge){
     for(auto s :edge){
-        if(_lattice.getSite(site).get_groupID() == _lattice.getSite(s).get_groupID()){
+        if(_lattice.getGroupID(site) == _lattice.getGroupID(s)){
             // no need to put the site here
-//            cout << "Site " << site << " and Id " << _lattice.getSite(site).set_groupID()
-//                 << " is already in the edge : line " << __LINE__ << endl;
             return true;
         }
     }
@@ -729,8 +705,8 @@ Index SitePercolation_ps_v9::selectSite(){
  */
 void SitePercolation_ps_v9::spanningIndices() const {
     cout << "Spanning Index : id" << endl;
-    for(auto i: _spanning_sites){
-        cout << "Index " << i << " : id " << _lattice.getSite(i).get_groupID() << endl;
+    for(Index i: _spanning_sites){
+        cout << "Index " << i << " : id " << _lattice.getGroupID(i) << endl;
     }
 }
 
@@ -738,7 +714,7 @@ void SitePercolation_ps_v9::wrappingIndices() const {
     cout << "Wrapping Index : id : relative index" << endl;
     for(auto i: _wrapping_sites){
         cout << "Index " << i << " : id "
-             << _lattice.getSite(i).get_groupID()
+             << _lattice.getGroupID(i)
              << " relative index : " << _lattice.getSite(i).relativeIndex() << endl;
     }
 }
@@ -809,14 +785,14 @@ bool SitePercolation_ps_v9::detectSpanning_v6(const Index& site) {
     vector<Index>::iterator it_top = _top_edge.begin();
     vector<Index>::iterator it_bot = _bottom_edge.begin();
     bool found_spanning_site = false;
-    int id = _lattice.getSite(site).get_groupID();
+    int id = _lattice.getGroupID(site);
 
     if(_top_edge.size() < _bottom_edge.size()){
         // if matched found on the smaller edge look for match in the larger edge
         for(; it_top < _top_edge.end(); ++it_top){
-            if(id == _lattice.getSite(*it_top).get_groupID()){
+            if(id == _lattice.getGroupID(*it_top)){
                 for(; it_bot < _bottom_edge.end(); ++it_bot){
-                    if(id == _lattice.getSite(*it_bot).get_groupID()){
+                    if(id == _lattice.getGroupID(*it_bot)){
                         // match found !
                         if(!check_if_id_matches(*it_top ,_spanning_sites)) {
                             _reached_critical = true;
@@ -836,9 +812,9 @@ bool SitePercolation_ps_v9::detectSpanning_v6(const Index& site) {
         }
     }else{
         for (; it_bot < _bottom_edge.end(); ++it_bot) {
-            if (id == _lattice.getSite(*it_bot).get_groupID()) {
+            if (id == _lattice.getGroupID(*it_bot)) {
                 for (; it_top < _top_edge.end(); ++it_top) {
-                    if (id == _lattice.getSite(*it_top).get_groupID()) {
+                    if (id == _lattice.getGroupID(*it_top)) {
                         // match found !
                         if (!check_if_id_matches(*it_top, _spanning_sites)) {
                             _reached_critical = true;
@@ -863,9 +839,9 @@ bool SitePercolation_ps_v9::detectSpanning_v6(const Index& site) {
 
     if(_left_edge.size() < _right_edge.size()){
         for(; it_lft < _left_edge.end(); ++it_lft) {
-            if (id == _lattice.getSite(*it_lft).get_groupID()) {
+            if (id == _lattice.getGroupID(*it_lft)) {
                 for (; it_rht < _right_edge.end(); ++it_rht) {
-                    if (id == _lattice.getSite(*it_rht).get_groupID()) {
+                    if (id == _lattice.getGroupID(*it_rht)) {
                         if (!check_if_id_matches(*it_lft, _spanning_sites)) {
                             _spanning_sites.push_back(*it_lft);
                             _reached_critical = true;
@@ -882,9 +858,9 @@ bool SitePercolation_ps_v9::detectSpanning_v6(const Index& site) {
         }
     }else{
         for (; it_rht < _right_edge.end(); ++it_rht) {
-            if (id == _lattice.getSite(*it_rht).get_groupID()) {
+            if (id == _lattice.getGroupID(*it_rht)) {
                 for(; it_lft < _left_edge.end(); ++it_lft) {
-                    if (id == _lattice.getSite(*it_lft).get_groupID()) {
+                    if (id == _lattice.getGroupID(*it_lft)) {
                         if (!check_if_id_matches(*it_lft, _spanning_sites)) {
                             _spanning_sites.push_back(*it_lft);
                             _reached_critical = true;
@@ -934,10 +910,10 @@ bool SitePercolation_ps_v9::detectWrapping() {
         return true; // reached critical in previous step
     }
     // check if it is already a wrapping site
-    int id = _lattice.getSite(site).get_groupID();
+    int id = _lattice.getGroupID(site);
     int tmp_id{};
     for (auto i: _wrapping_sites){
-        tmp_id = _lattice.getSite(i).get_groupID();
+        tmp_id = _lattice.getGroupID(i);
         if(id == tmp_id ){
             return true;
         }
@@ -953,7 +929,7 @@ bool SitePercolation_ps_v9::detectWrapping() {
 //        cout << "pivot's " << site << " relative " << irel << endl;
         IndexRelative b;
         for (auto a:sites){
-            if(_lattice.getSite(a).get_groupID() != _lattice.getSite(site).get_groupID()){
+            if(_lattice.getGroupID(a) != _lattice.getGroupID(site)){
                 // different cluster
                 continue;
             }
@@ -985,7 +961,7 @@ bool SitePercolation_ps_v9::detectWrapping() {
   */
 void SitePercolation_ps_v9::relabel_sites_v5(Index site_a, const Cluster& clstr_b) {
     const vector<Index> sites = clstr_b.getSiteIndices();
-    int id_a = _lattice.getSite(site_a).get_groupID();
+    int id_a = _lattice.getGroupID(site_a);
     int id_b = clstr_b.get_ID();
     Index b = clstr_b.getRootSite();
 
@@ -996,7 +972,7 @@ void SitePercolation_ps_v9::relabel_sites_v5(Index site_a, const Cluster& clstr_
     bool flag{false};
     // find which site_b has id_a of clstr_b
     for(auto n: sites_neighbor_a){
-        if(id_b == _lattice.getSite(n).get_groupID()){
+        if(id_b == _lattice.getGroupID(n)){
             // checking id_a equality is enough. since id_a is the id_a of the active site already.
             relative_index_b_after = getRelativeIndex(site_a, n);
             site_b = n;
@@ -1024,7 +1000,7 @@ void SitePercolation_ps_v9::relabel_sites(const vector<Index> &sites, int id_a, 
     IndexRelative relative_site__a;
     for (value_type i = 0; i < sites.size(); ++i) {
         a = sites[i];
-        _lattice.getSite(a).set_groupID(id_a);
+        _lattice.setGroupID(a, id_a);
         relative_site__a = _lattice.getSite(a).relativeIndex();
         x = relative_site__a.x_ + delta_x_ab;
         y = relative_site__a.y_ + delta_y_ab;
@@ -1096,7 +1072,7 @@ value_type SitePercolation_ps_v9::numberOfSitesInTheLargestCluster() {
 value_type SitePercolation_ps_v9::numberOfSitesInTheSpanningClusters_v2() {
 
     if(! _spanning_sites.empty()){
-        int id = _lattice.getSite(_spanning_sites.front()).get_groupID();
+        int id = _lattice.getGroupID(_spanning_sites.front());
         if(id >= 0) {
             return _clusters[id].numberOfSites();
         }
@@ -1112,7 +1088,7 @@ value_type SitePercolation_ps_v9::numberOfSitesInTheSpanningClusters_v2() {
 value_type SitePercolation_ps_v9::numberOfBondsInTheSpanningClusters_v2() {
     if(!_spanning_sites.empty()){
 //        cout << "number of spanning sites " << _spanning_sites.size() << " : line " << __LINE__ << endl;
-        int id = _lattice.getSite(_spanning_sites.front()).get_groupID();
+        int id = _lattice.getGroupID(_spanning_sites.front());
         if(id >= 0) {
             return _clusters[id].numberOfBonds();
         }
@@ -1128,7 +1104,7 @@ value_type SitePercolation_ps_v9::numberOfSitesInTheWrappingClusters(){
     value_type nos{};
     int id{};
     for(auto i: _wrapping_sites){
-        id = _lattice.getSite(i).get_groupID();
+        id = _lattice.getGroupID(i);
         if(id >= 0) {
             nos += _clusters[id].numberOfSites();
         }
@@ -1144,7 +1120,7 @@ value_type SitePercolation_ps_v9::numberOfBondsInTheWrappingClusters(){
     value_type nob{};
     int id{};
     for(auto i: _wrapping_sites){
-        id = _lattice.getSite(i).get_groupID();
+        id = _lattice.getGroupID(i);
         if(id >= 0) {
             nob += _clusters[id].numberOfBonds();
         }
@@ -1182,10 +1158,10 @@ void SitePercolation_ps_v9::writeVisualLatticeData(const string &filename, bool 
     fout << "# color=0 -means-> unoccupied site" << endl;
     int id{-1};
     if(!_spanning_sites.empty()){
-        id = _lattice.getSite(_spanning_sites.front()).get_groupID();
+        id = _lattice.getGroupID(_spanning_sites.front());
     }
     else if(!_wrapping_sites.empty()){
-        id = _lattice.getSite(_wrapping_sites.front()).get_groupID();
+        id = _lattice.getGroupID(_wrapping_sites.front());
     }
 
     if(only_spanning){
@@ -1200,7 +1176,7 @@ void SitePercolation_ps_v9::writeVisualLatticeData(const string &filename, bool 
     else {
         for (value_type y{}; y != length(); ++y) {
             for (value_type x{}; x != length(); ++x) {
-                id = _lattice.getSite({y, x}).get_groupID();
+                id = _lattice.getGroupID({y, x});
                 if(id != -1) {
                     fout << x << ',' << y << ',' << id << endl;
                 }

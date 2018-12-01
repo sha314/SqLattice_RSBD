@@ -11,12 +11,10 @@ using namespace std;
 ostream& operator<<(ostream& os, const Index& index)
 {
     return os <<'(' << index.row_ << ',' << index.column_ << ')';
-//    return os << '(' << std::setw(2) << index.x_ << ',' << std::setw(2) << index.y_ << ')';
 }
 
 ostream& operator<<(ostream& os, const IndexRelative& index)
 {
-//    return os <<'(' << index.x_ << ',' << index.y_ << ')';
     return os << '(' << std::setw(3) << index.x_ << ',' << std::setw(3) << index.y_ << ')';
 }
 

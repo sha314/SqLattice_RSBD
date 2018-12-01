@@ -79,17 +79,15 @@ public:
     value_type length() const { return  _length;}
 
     Site& getSite(Index index);
-
-    Bond& get_h_bond(Index id);
-    Bond& get_v_bond(Index id);
     Bond& getBond(BondIndex);
 
     const Site& getSite(Index index) const ;
+    const Bond& getBond(BondIndex index) const ;
 
     void setGroupID(Index index, int group_id);
     void setGroupID(BondIndex index, int group_id);
-    int getGroupID(Index index);
-    int getGroupID(BondIndex index);
+    const int getGroupID(Index index)const;
+    const int getGroupID(BondIndex index)const;
 
 
 /******************************************************************************

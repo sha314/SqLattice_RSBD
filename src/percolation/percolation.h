@@ -39,18 +39,11 @@ protected:
 
     std::vector<Cluster> _clusters;   // check and remove reapeted index manually
     // every birthTime we create a cluster we assign an set_ID for them
-    int _cluster_id{};
-
-    value_type min_index{};
-    value_type max_index{};
 
     double _occuption_probability {};
     // entropy
     double _entropy{};
     double _entropy_current{};
-    double _entropy_previous{};
-    double _largest_jump_entropy{}; // lrgest jump in entropy
-    double _entropy_jump_pc{}; // at what pc there have been the largest jump
     size_t _cluster_count{};
     value_type _bonds_in_cluster_with_size_two_or_more{0};   // total number of bonds in the clusters. all cluster has bonds > 1
     bool _reached_critical = false; // true if the system has reached critical value
@@ -58,9 +51,7 @@ protected:
     value_type _total_relabeling{};
     double time_relabel{};
     value_type _number_of_occupied_sites{};
-    value_type _number_of_occupied_bonds{};
     value_type _max_iteration_limit{};
-    std::vector<value_type> randomized_index;
     std::random_device _random_device;
     std::mt19937 _random_generator;
 
@@ -71,10 +62,7 @@ public:
     virtual ~SqLatticePercolation() = default;
     SqLatticePercolation(value_type length);
     void reset();
-    void set_cluster_measuring_unit(int i){
-        std::cout << "Cluster measuring unit = " << ((i==0) ? "bond" : "site")
-                  << " : line " << __LINE__ << std::endl;
-    }
+
 
     bool occupy();
     value_type length() const { return _length;}
@@ -99,7 +87,6 @@ public:
  */
     virtual void viewLatticeExtended(){
         _lattice.view_sites_extended();
-
     }
 
     /**
@@ -137,9 +124,7 @@ public:
     virtual double entropy() { return _entropy_current;}
     double entropy_by_site(); // for future convenience. // the shannon entropy. the full calculations. time consuming
     double entropy_by_bond(); // for future convenience. // the shannon entropy. the full calculations. time consuming
-    double orderParameter();
     size_t numberOfcluster() const {return _cluster_count;}
-
 
     void get_cluster_info(
             std::vector<value_type> &site,
@@ -238,7 +223,7 @@ public:
     SitePercolation_ps_v9() = default;
     SitePercolation_ps_v9(SitePercolation_ps_v9 & ) = default;
     SitePercolation_ps_v9(SitePercolation_ps_v9 && ) = default;
-    SitePercolation_ps_v9(value_type length, bool periodicity=true);
+    explicit SitePercolation_ps_v9(value_type length, bool periodicity=true);
 
     SitePercolation_ps_v9& operator=(SitePercolation_ps_v9 & ) = default;
 //    SitePercolation_ps_v8&& operator=(SitePercolation_ps_v8 && ) = default;
@@ -248,22 +233,10 @@ public:
     virtual void reset();
 
 
-
-    /*************************************************
-     * Flags
-     ************************************************/
     bool periodicity() const {return _periodicity;}
-
-
-    /***********************************************
-     * Properties of Percolation class
-     ***********************************************/
     std::string getSignature();
 
 
-    /****************************************************************
-     * Calculations
-     ***************************************************************/
     void add_entropy_for_bond(value_type index);
     void subtract_entropy_for_bond(const std::set<value_type> &found_index_set, int base=-1);
 
@@ -271,7 +244,6 @@ public:
      * Site placing methods
      ************************************************/
     virtual bool occupy();
-
     value_type placeSite_weighted(Index site); // uses weighted relabeling by first identifying the largest cluster
     value_type placeSite_weighted(Index site,
                                   std::vector<Index>& neighbor_sites,
@@ -281,12 +253,8 @@ public:
 
     void connection_v2(Index site, std::vector<Index> &site_neighbor, std::vector<BondIndex> &bond_neighbor);
 
-    /*************************************************
-     * Relabeling methods
-     *************************************************/
     // applicable to weighted relabeling
     void relabel_sites_v5(Index root_a, const Cluster& clstr_b); // relative index is set accordingly
-
 
     /**********************************************
      * Information about current state of Class
@@ -294,9 +262,6 @@ public:
     double numberOfOccupiedSite() const { return _number_of_occupied_sites;}
     double occupationProbability() const { return double(_number_of_occupied_sites)/maxSites();}
     double entropy(); // the shannon entropy
-
-
-
 
     value_type numberOfBondsInTheLargestCluster_v2();
     value_type numberOfSitesInTheLargestCluster();
@@ -306,7 +271,6 @@ public:
 
     value_type numberOfSitesInTheWrappingClusters()  ;
     value_type numberOfBondsInTheWrappingClusters()  ;
-
 
     /***********************************
      * Spanning Detection
@@ -344,9 +308,7 @@ protected:
     void initialize_index_sequence();
     void randomize_v2(); // better random number generator
 
-    std::set<value_type> find_index_for_placing_new_bonds(const std::vector<Index> &neighbors);
     int find_cluster_index_for_placing_new_bonds(const std::vector<Index> &neighbors, std::set<value_type> &found_indices);
-
 
     value_type manage_clusters(
             const std::set<value_type> &found_index_set,

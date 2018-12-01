@@ -24,8 +24,6 @@ SqLatticePercolation::SqLatticePercolation(value_type length) {
     _max_number_of_bonds = 2*_length_squared;
     _max_number_of_sites = _length_squared;
     _clusters = vector<Cluster>();
-    min_index = 0;
-    max_index = _length - 1;
 
 //    size_t seed = 0;
 //    cerr << "automatic seeding is commented : line " << __LINE__ << endl;
@@ -90,10 +88,10 @@ void SqLatticePercolation::viewClusterExtended() {
         for (auto a: bonds) {
             if (a.horizontal()) {
                 // horizontal bond
-                cout << _lattice.get_h_bond({a.row_, a.column_}) << ',';
+                cout << _lattice.getBond({BondType::Horizontal, a.row_, a.column_}) << ',';
             } else if (a.vertical()) {
                 // vertical bond
-                cout << _lattice.get_v_bond({a.row_, a.column_}) << ',';
+                cout << _lattice.getBond({BondType::Vertical, a.row_, a.column_}) << ',';
             } else {
                 cout << '!' << a << '!' << ','; // bond is not valid
             }
@@ -168,14 +166,11 @@ void SqLatticePercolation::reset() {
     _lattice.reset();
     _clusters.clear();
     _index_sequence_position = 0;
-    _cluster_id = 0;
+
     _occuption_probability = 0;
     // entropy
     _entropy=0;
     _entropy_current=0;
-    _entropy_previous=0;
-    _largest_jump_entropy = 0;
-    _entropy_jump_pc = 0;
     _total_relabeling = 0;
     time_relabel = 0;
     _cluster_count = 0;

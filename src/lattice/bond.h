@@ -30,11 +30,8 @@ struct Bond{
     BondType bondType;
     //relative distance from the root site. {0,0} if it is the root site
     IndexRelative _relative_index{0,0};
-
-
     Index _end1;
     Index _end2;
-
     BondIndex _id;
 
     ~Bond() = default;
@@ -66,7 +63,6 @@ struct Bond{
                     _end2.column_ = end1.column_;
                 }
             }
-//            _id = set_ID<3>({0, _end1.x_, _end1.y_});
         }
         else if(_end1.column_ == _end2.column_){
             bondType = BondType::Vertical;
