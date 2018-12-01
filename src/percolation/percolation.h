@@ -261,31 +261,17 @@ public:
     std::string getSignature();
 
 
-    void numberOfActiveSites() const {std::cout << "Number of active sites " << _number_of_occupied_sites << std::endl;}
-    double activeSites() const { return _number_of_occupied_sites;}
-
-    value_type count_number_of_active_site();
-
-    int birthTimeOfSpanningCluster() const;
-    int birthTimeOfACluster(int id) const;
-
-
     /****************************************************************
      * Calculations
      ***************************************************************/
-
     void add_entropy_for_bond(value_type index);
     void subtract_entropy_for_bond(const std::set<value_type> &found_index_set, int base=-1);
 
     /*************************************************
      * Site placing methods
-     *
      ************************************************/
     virtual bool occupy();
-    value_type placeSite(Index site,
-                         std::vector<Index>& neighbor_sites,
-                         std::vector<BondIndex>& neighbor_bonds);
-    value_type placeSite(Index site);
+
     value_type placeSite_weighted(Index site); // uses weighted relabeling by first identifying the largest cluster
     value_type placeSite_weighted(Index site,
                                   std::vector<Index>& neighbor_sites,
@@ -299,12 +285,7 @@ public:
      * Relabeling methods
      *************************************************/
     // applicable to weighted relabeling
-    value_type relabel(value_type index_1, value_type index_2);
-    void relabel_sites(const Cluster&  clstr, int id);
-    void relabel_sites_v4(Index root_a, const Cluster& clstr_b); // relative index is set accordingly
     void relabel_sites_v5(Index root_a, const Cluster& clstr_b); // relative index is set accordingly
-    void relabel_sites_v6(Index root_a, const Cluster& clstr_b, int id); // relative index is set accordingly
-    void relabel_bonds(const Cluster&  clstr, int id);
 
 
     /**********************************************
@@ -314,23 +295,17 @@ public:
     double occupationProbability() const { return double(_number_of_occupied_sites)/maxSites();}
     double entropy(); // the shannon entropy
 
-    double orderParameter() const;  // number of bonds in the largest cluster / total number of bonds
-    double orderParameter_v2() const;  // number of bonds in the largest cluster / total number of bonds
 
-    value_type numberOfBondsInTheLargestCluster();
+
+
     value_type numberOfBondsInTheLargestCluster_v2();
-    value_type numberOfBondsInTheSpanningCluster();
     value_type numberOfSitesInTheLargestCluster();
 
-    double numberOfSitesInTheSpanningClusters()  ;
-    double numberOfBondsInTheSpanningClusters()  ;
     value_type numberOfSitesInTheSpanningClusters_v2()  ;
     value_type numberOfBondsInTheSpanningClusters_v2()  ;
 
     value_type numberOfSitesInTheWrappingClusters()  ;
     value_type numberOfBondsInTheWrappingClusters()  ;
-
-    value_type wrappingClusterSize() {return numberOfBondsInTheWrappingClusters();}
 
 
     /***********************************
@@ -338,10 +313,7 @@ public:
      **********************************/
     bool detectSpanning_v6(const Index& site);
 
-    void save_index_if_in_boundary_v2(const Index& site);
     bool check_if_id_matches(Index site, const std::vector<Index> &edge);
-    bool check_if_id_matches_and_erase(Index site, std::vector<Index> &edge);
-    bool isSpanned() const { return _reached_critical;}
 
     bool detectWrapping();
 
@@ -375,10 +347,6 @@ protected:
     std::set<value_type> find_index_for_placing_new_bonds(const std::vector<Index> &neighbors);
     int find_cluster_index_for_placing_new_bonds(const std::vector<Index> &neighbors, std::set<value_type> &found_indices);
 
-    value_type manage_clusters(
-            const std::set<value_type> &found_index_set,
-            std::vector<BondIndex> &hv_bonds,
-            Index &site);
 
     value_type manage_clusters(
             const std::set<value_type> &found_index_set,
@@ -387,34 +355,9 @@ protected:
             int base_id // since id and index is same
     );
 
-    bool anyActiveSite(value_type r, value_type c, value_type delta);
-    bool anyActiveSpanningSite(value_type row, value_type col, value_type delta);
-
 public:
     // on test
     IndexRelative getRelativeIndex(Index root, Index site_new);
-
-};
-
-
-/******************************************************************************
- * Explosive site percolation in square lattice with sum rule and product rule
- */
-class SitePercolationExplosive: public SitePercolation_ps_v9{
-
-public:
-    ~SitePercolationExplosive() = default;
-    SitePercolationExplosive(value_type length);
-    std::string getSignature() {
-        std::string s = "sq_lattice_site_percolation_explosive_";
-        if(_periodicity)
-            s += "_periodic_";
-        else
-            s += "_non_periodic_";
-        s += std::to_string(length());
-        return s;
-    }
-
 };
 
 /*******************************************************************************
@@ -443,10 +386,8 @@ public:
     Index select_site_upto_1nn(std::vector<Index> &sites, std::vector<BondIndex> &bonds);
     Index select_site_upto_2nn(std::vector<Index> &sites, std::vector<BondIndex> &bonds);
 
-
     void reset();
     void initialize_indices();
-//    void randomize_index();
 
     virtual std::string getSignature() {
         std::string s = "sq_lattice_site_percolation_ballistic_deposition_";
@@ -462,22 +403,15 @@ public:
      * occupy upto 1st nearset neighbor.
      * If the randomly selected site is occupied then select one of the nearest neighor randomly
      * If it is also occupied skip the rest setps and start next iteration Else occupy it
-     *
-     *
      */
-
     value_type placeSite_1nn_v2();
-
-
     /*********************************
      * occupy upto 2nd nearest neighbor.
      * If the randomly selected site is occupied then select one of the nearest neighor randomly
      * If it is also occupied, select the next neighbor in the direction of motion Else occupy it.
      * If the 2nd nearest neighbor in the direction of motion is also occupied then skip the rest of the steps
      *      and start the next iteration
-     *
      */
-
     value_type placeSite_2nn_v1();
 
 };
@@ -493,19 +427,15 @@ public:
 
     bool occupy() {
         // if no site is available then return false
-
         if(_number_of_occupied_sites == maxSites()){
             return false;
         }
-
         try {
-//        value_type v = placeSite_1nn_v0(); // debugging version
             value_type v = placeSite_1nn_v2();
             _occuption_probability = occupationProbability(); // for super class
             return v != ULLONG_MAX;
         }catch (OccupiedNeighbor& on){
 //        on.what();
-//        cout << "line : " << __LINE__ << endl;
             return false;
         }
 
